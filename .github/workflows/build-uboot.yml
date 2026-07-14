@@ -1,0 +1,38 @@
+name: Build MT7981 U-Boot For CMCC RAX3000M
+on:
+  push:
+    branches: [ master ]
+  # 支持手动点击触发编译
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取完整源码（包含子模块ATF/Uboot）
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      # 2. 安装编译依赖（和本地Ubuntu编译依赖完全一致）
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential gcc-aarch64-linux-gnu flex bison libssl-dev device-tree-compiler libncurses-dev
+
+      # 3. 执行编译脚本，指定你的设备参数
+      # SOC=mt7981 芯片；BOARD=cmcc_rax3000m 机型；MULTI_LAYOUT=1 适配NAND多分区布局
+      - name: Compile U-Boot
+        run: |
+          SOC=mt7981 BOARD=cmcc_rax3000m MULTI_LAYOUT=1 ./build.sh
+
+      # 4. 打包编译输出文件并上传为制品
+      - name: Upload compiled uboot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MT7981-CMCC-RAX3000M-Uboot
+          path: |
+            ./output/*
+          retention-days: 30
