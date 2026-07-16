@@ -8,26 +8,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 关键：递归拉取全部子模块（atf/uboot源码，缺失就会报defconfig找不到）
-      - name: Checkout full source & submodules
+      - name: Checkout repo source
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           fetch-depth: 0
-          # 强制拉取子模块最新代码
-          submodules-depth: full
+
+      # 核心步骤：强制同步并拉取所有子模块远端最新代码
+      - name: Refresh submodules to latest remote
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive --remote
+          git submodule status
 
       - name: Install compile dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential gcc-aarch64-linux-gnu flex bison libssl-dev device-tree-compiler libncurses-dev
 
-      # 正确参数：BOARD=cmcc_rax3000m（NAND标准版），MULTI_LAYOUT=1 开启多分区
       - name: Compile U-Boot
         run: |
           SOC=mt7981 BOARD=cmcc_rax3000m MULTI_LAYOUT=1 ./build.sh
 
-      - name: Upload compiled artifact
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: MT7981-CMCC-RAX3000M-NAND-Uboot
