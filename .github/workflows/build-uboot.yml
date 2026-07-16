@@ -8,30 +8,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo source
+      - name: Checkout source & submodules
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
 
-      # 核心步骤：强制同步并拉取所有子模块远端最新代码
-      - name: Refresh submodules to latest remote
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --recursive --remote
-          git submodule status
-
-      - name: Install compile dependencies
+      # 完全照搬官方文档的安装命令
+      - name: Install official required dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential gcc-aarch64-linux-gnu flex bison libssl-dev device-tree-compiler libncurses-dev
+          sudo apt install -y gcc-aarch64-linux-gnu build-essential flex bison libssl-dev device-tree-compiler qemu-user-static
 
+      # 对齐官方cmcc_rax3000m-emmc示例，不添加MULTI_LAYOUT
       - name: Compile U-Boot
-        run: |
-          SOC=mt7981 BOARD=cmcc_rax3000m MULTI_LAYOUT=1 ./build.sh
+        run: SOC=mt7981 BOARD=cmcc_rax3000m ./build.sh
 
-      - name: Upload firmware artifact
+      - name: Download compiled uboot
         uses: actions/upload-artifact@v4
         with:
-          name: MT7981-CMCC-RAX3000M-NAND-Uboot
+          name: CMCC-RAX3000M-NAND-UBOOT
           path: ./output/
           retention-days: 30
