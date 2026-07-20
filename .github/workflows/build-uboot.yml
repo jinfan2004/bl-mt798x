@@ -1,3 +1,4 @@
+#360T7
 name: Build MT7981 U-Boot 360T7 MultiLayout 108M
 on:
   # 移除push，只保留手动触发
