@@ -1,8 +1,6 @@
-#360T7
-name: Build MT7981 U-Boot 360T7 SPI-NAND Support 108M Layout
+name: Build MT7981 U-Boot 360T7 MultiLayout 108M
 on:
-  push:
-    branches: [ master ]
+  # 移除push，只保留手动触发
   workflow_dispatch:
 
 jobs:
@@ -20,8 +18,7 @@ jobs:
           sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu build-essential flex bison libssl-dev device-tree-compiler qemu-user-static
 
-      # 开启MULTI_LAYOUT兼容108M大分区固件
-      - name: Compile U-Boot
+      - name: Compile U-Boot support 108M UBI
         run: SOC=mt7981 BOARD=360t7 MULTI_LAYOUT=1 ./build.sh
 
       - name: Upload compiled uboot artifact
